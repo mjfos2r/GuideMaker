@@ -375,7 +375,7 @@ class TargetProcessor:
             self.targets['hasrestrictionsite'] = self.targets['target'].str.contains('|'.join(element_to_exclude))
         else:
             self.targets['hasrestrictionsite'] = False
-    
+
     def _one_hot_encode(self, seq_list: List[object]) -> List[str]:
         """One hot encode Target DNA as a binary string representation for NMSLIB."""
         charmap = {'A': '1 0 0 0', 'C': '0 1 0 0', 'G': '0 0 1 0', 'T': '0 0 0 1'}
@@ -507,15 +507,15 @@ class TargetProcessor:
             hitseqidx = entry[0].tolist()
             editdist = entry[1].tolist()
             if self.targets['dtype'].iat[0] == "hamming":
-                # check that the closest sequence meets the min. dist. requirment. We multiply by 2 b/c each 
+                # check that the closest sequence meets the min. dist. requirment. We multiply by 2 b/c each
                 # base is one hot encoded. e.g. 1000 vs 0100 = 2 differences
                 if editdist[1] >= 2 * self.editdist:
                     neighbors = {"seqs": [self.targets['target'].values[x] for x in hitseqidx],  # reverse this?
-                                "dist": [int(x / 2) for x in editdist]} 
+                                "dist": [int(x / 2) for x in editdist]}
                     neighbor_dict[queryseq] = {"target": unique_targets[i],
                                             "neighbors": neighbors}
             else:
-               if editdist[1] >= self.editdist: 
+               if editdist[1] >= self.editdist:
                     neighbors = {"seqs": [self.targets['target'].values[x] for x in hitseqidx],  # reverse this?
                                 "dist": [int(x) for x in editdist]}
                     neighbor_dict[queryseq] = {"target": unique_targets[i],
@@ -716,8 +716,8 @@ class Annotation:
                 for entry in genbank_file:
                     for record in entry.features:
                         if record.type in feature_types:
-                            if record.strand in [1, -1, "+", "-"]:
-                                pddict["strand"].append("-" if str(record.strand) in ['-1', '-' ] else "+")
+                            if record.location.strand in [1, -1, "+", "-"]:
+                                pddict["strand"].append("-" if str(record.location.strand) in ['-1', '-' ] else "+")
                             featid = hashlib.md5(str(record).encode()).hexdigest()
                             pddict['chrom'].append(entry.id)
                             pddict["chromStart"].append(int(record.location.start))
@@ -1152,10 +1152,10 @@ def cfd_score(df):
 def get_doench_efficiency_score(df, pam_orientation, num_threads=1):
     checkset={'AGG','CGG','TGG','GGG'}
     # filter out lines with N'safter the PAM, these cannot be scored
-    df2 = df[-df.target_seq30.str.contains('N')]
+    df2 = df[-df.target_seq30.str.contains("WSKMYRVHDBN")]
     if len(df) != len(df2):
         n_removed = len(df) - len(df2)
-        logger.warning("{} guides were removed from consideration becasue there were N's in the region flanking the PAM site. These cannot be scored.".format(n_removed) )
+        logger.warning("{} guides were removed from consideration becasue there were ambiguous nucleotides in the region flanking the PAM site. These cannot be scored.".format(n_removed) )
     if pam_orientation == "3prime" and set(df2.PAM)==checkset:
 
         doenchscore = doench_predict.predict(np.array([x.upper() for x in df2.target_seq30]), num_threads=num_threads)
