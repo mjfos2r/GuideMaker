@@ -891,7 +891,7 @@ class Annotation:
 
         # Select guides where target is - and guide is + and the guide is is within [before_feat] of the gene start
         p6 = (self.nearby.query('`Guide strand` == "+" and `Feature strand` == "-" and \
-                                 0 <`Feature end` - `Guide start` < @after_feat
+                                 0 <`Feature end` - `Guide start` < @after_feat \
                                  and `Guide end` <= `Feature end`'))
         self.filtered_df = pd.concat([filtered_df, p1, p2, p3, p4, p5, p6], axis=0)
 
